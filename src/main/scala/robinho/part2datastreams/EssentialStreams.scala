@@ -1,5 +1,8 @@
 package robinho.part2datastreams
 
+import org.apache.flink.api.common.serialization.SimpleStringEncoder
+import org.apache.flink.core.fs.Path
+import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink
 import org.apache.flink.streaming.api.scala._
 
 object EssentialStreams {
@@ -71,8 +74,15 @@ object EssentialStreams {
       .filter(_.output == "fizzbuzz")
       .map(_.n)
 
-    val result = fizzbuzz.writeAsText("output/fizzbuzz.txt")
-    result.setParallelism(1)
+    // add sink
+    fizzbuzz.addSink(
+      StreamingFileSink
+        .forRowFormat(
+          new Path("output/fizzbuzz_sink"),
+          new SimpleStringEncoder[Long]("UTF-8")
+        )
+        .build()
+    ).setParallelism(1)
 
     env.execute()
   }
