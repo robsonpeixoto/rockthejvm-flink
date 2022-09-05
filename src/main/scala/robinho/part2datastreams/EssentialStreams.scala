@@ -20,9 +20,34 @@ object EssentialStreams {
     env.execute
   }
 
+  def demoTransformations(): Unit = {
+    val env: StreamExecutionEnvironment =
+      StreamExecutionEnvironment.getExecutionEnvironment
+    val numbers: DataStream[Int] = env.fromElements(1, 2, 3, 4, 5)
+
+    // is possible to configure parallelism globally
+    // println(s"Current parallelism: ${env.getParallelism}")
+    // env.setParallelism(2)
+    // println(s"Current parallelism: ${env.getParallelism}")
+
+    // map
+    val doubledNumbers = numbers.map(_ * 2)
+
+    // flatMap
+    val expandedNumbers = numbers.flatMap(n => List(n, n + 1))
+
+    // filter
+    val filteredNumbers = numbers.filter(_ % 2 == 0)
+
+    // it will create a file for each CPU(parallelism)
+    val finalData = expandedNumbers.writeAsText("output/expandedStream.txt")
+    finalData.setParallelism(1)
+
+    env.execute()
+  }
 
   def main(args: Array[String]): Unit = {
-    applicationTemplate()
+    demoTransformations()
   }
 
 }
