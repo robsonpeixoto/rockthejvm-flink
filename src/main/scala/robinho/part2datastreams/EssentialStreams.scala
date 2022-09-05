@@ -46,8 +46,40 @@ object EssentialStreams {
     env.execute()
   }
 
+  /** Exercise: FizzBuzz on Flink
+    * - take a stream of 100 natural numbers
+    * - for every number
+    *   - if n % 3 == 0 then return "fizz"
+    *   - if n % 5 == 0 => "buzz"
+    *   - if both => "fizzbuzz"
+    * - write the numbers for which you said "fizzbuzz" to a file
+    */
+  case class FizzBuzzResult(n: Long, output: String)
+  def fizzbuzz(): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val numbers = env.fromSequence(1, 100)
+
+    val fizzbuzz = numbers
+      .map { n =>
+        val output = {
+          if (n % 3 == 0 && n % 5 == 0) "fizzbuzz"
+          else if (n % 3 == 0) "fizz"
+          else if (n % 5 == 0) "buzz"
+          else s"$n"
+        }
+        FizzBuzzResult(n, output)
+      }
+      .filter(_.output == "fizzbuzz")
+      .map(_.n)
+
+    val result = fizzbuzz.writeAsText("output/fizzbuzz.txt")
+    result.setParallelism(1)
+
+    env.execute()
+  }
+
   def main(args: Array[String]): Unit = {
-    demoTransformations()
+    fizzbuzz()
   }
 
 }
