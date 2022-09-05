@@ -60,14 +60,13 @@ object EssentialStreams {
     val numbers = env.fromSequence(1, 100)
 
     val fizzbuzz = numbers
-      .map { n =>
-        val output = {
-          if (n % 3 == 0 && n % 5 == 0) "fizzbuzz"
-          else if (n % 3 == 0) "fizz"
-          else if (n % 5 == 0) "buzz"
-          else s"$n"
+      .map { (x: Long) =>
+        x match {
+          case n if n % 3 == 0 && n % 5 == 0 => FizzBuzzResult(n, "fizzbuzz")
+          case n if n % 3 == 0               => FizzBuzzResult(n, "fizzbuzz")
+          case n if n % 5 == 0               => FizzBuzzResult(n, "fizzbuzz")
+          case n                             => FizzBuzzResult(n, s"$n")
         }
-        FizzBuzzResult(n, output)
       }
       .filter(_.output == "fizzbuzz")
       .map(_.n)
