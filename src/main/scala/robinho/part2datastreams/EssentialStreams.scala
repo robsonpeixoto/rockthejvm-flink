@@ -6,7 +6,8 @@ object EssentialStreams {
 
   def applicationTemplate(): Unit = {
     // 1 - execution environment
-    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment =
+      StreamExecutionEnvironment.getExecutionEnvironment
 
     // in between, add any sort of computations
     import org.apache.flink.streaming.api.scala._
