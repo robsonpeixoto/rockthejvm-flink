@@ -9,8 +9,7 @@ object EssentialStreams {
 
   def applicationTemplate(): Unit = {
     // 1 - execution environment
-    val env: StreamExecutionEnvironment =
-      StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
     // in between, add any sort of computations
     import org.apache.flink.streaming.api.scala._
@@ -24,8 +23,7 @@ object EssentialStreams {
   }
 
   def demoTransformations(): Unit = {
-    val env: StreamExecutionEnvironment =
-      StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
     val numbers: DataStream[Int] = env.fromElements(1, 2, 3, 4, 5)
 
     // is possible to configure parallelism globally
@@ -50,12 +48,12 @@ object EssentialStreams {
   }
 
   /** Exercise: FizzBuzz on Flink
-    * - take a stream of 100 natural numbers
-    * - for every number
-    *   - if n % 3 == 0 then return "fizz"
-    *   - if n % 5 == 0 => "buzz"
-    *   - if both => "fizzbuzz"
-    * - write the numbers for which you said "fizzbuzz" to a file
+    *   - take a stream of 100 natural numbers
+    *   - for every number
+    *     - if n % 3 == 0 then return "fizz"
+    *     - if n % 5 == 0 => "buzz"
+    *     - if both => "fizzbuzz"
+    *   - write the numbers for which you said "fizzbuzz" to a file
     */
   case class FizzBuzzResult(n: Long, output: String)
   def fizzbuzz(): Unit = {
@@ -75,14 +73,16 @@ object EssentialStreams {
       .map(_.n)
 
     // add sink
-    fizzbuzz.addSink(
-      StreamingFileSink
-        .forRowFormat(
-          new Path("output/fizzbuzz_sink"),
-          new SimpleStringEncoder[Long]("UTF-8")
-        )
-        .build()
-    ).setParallelism(1)
+    fizzbuzz
+      .addSink(
+        StreamingFileSink
+          .forRowFormat(
+            new Path("output/fizzbuzz_sink"),
+            new SimpleStringEncoder[Long]("UTF-8")
+          )
+          .build()
+      )
+      .setParallelism(1)
 
     env.execute()
   }
