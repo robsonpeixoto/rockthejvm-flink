@@ -1,9 +1,12 @@
 package robinho.part2datastreams
 
+import org.apache.flink.api.common.functions.{FlatMapFunction, MapFunction, ReduceFunction}
 import org.apache.flink.api.common.serialization.SimpleStringEncoder
 import org.apache.flink.core.fs.Path
+import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink
 import org.apache.flink.streaming.api.scala._
+import org.apache.flink.util.Collector
 
 object EssentialStreams {
 
@@ -87,8 +90,67 @@ object EssentialStreams {
     env.execute()
   }
 
-  def main(args: Array[String]): Unit = {
-    fizzbuzz()
+  def demoExplicitTransformations(): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val numbers = env.fromSequence(1, 100)
+
+    // map
+    val doubledNumbers = numbers.map(_ * 2)
+
+    // map - explicit version
+    val doubledNumbers_v2 = numbers.map(new MapFunction[Long, Long] {
+      // declare fields, methods, ...
+      override def map(value: Long): Long = value * 2
+    })
+
+    // flatMap
+    val expandedNumbers = numbers.flatMap(n => Range.Long(1, n, 1).toList)
+
+    // flatMap - explicit version
+    val expandedNumbers_v2 = numbers.flatMap(new FlatMapFunction[Long, Long] {
+      override def flatMap(n: Long, out: Collector[Long]): Unit =
+        Range.Long(1, n, 1).foreach { i =>
+          out.collect(i) // imperative style - pushes the new element downstream
+        }
+    })
+
+    // process method
+    // ProcessFunction is THE MOST GENERAL function to process elements in Flink
+    val expandedNumbers_v3 = numbers.process(new ProcessFunction[Long, Long] {
+      override def processElement(
+          n: Long,
+          context: ProcessFunction[Long, Long]#Context,
+          out: Collector[Long]
+      ): Unit =
+        Range.Long(1, n, 1).foreach { i =>
+          out.collect(i) // imperative style - pushes the new element downstream
+        }
+    })
+
+    /*
+     reduce
+     happens on keyed streams
+
+     Flink will create 2 tasks, and each task is a stream:
+     - one for the key True
+     - one for the key False
+     */
+    val keyedNumbers: KeyedStream[Long, Boolean] = numbers.keyBy(n => n % 2 == 0)
+
+    // reduce - FP approach
+    val sumByKey = keyedNumbers.reduce(_ + _) // sum up all the elements BY KEY
+
+    // reduce - explicit approach
+    val sumByKey_v2 = keyedNumbers.reduce(new ReduceFunction[Long] {
+      override def reduce(x: Long, y: Long): Long = x + y
+    })
+
+    sumByKey_v2.print()
+
+    env.execute()
   }
 
+  def main(args: Array[String]): Unit = {
+    demoExplicitTransformations()
+  }
 }
