@@ -13,7 +13,6 @@ package object shopping {
 
   sealed trait ShoppingCartEvent {
     def userId: String
-
     def time: java.time.Instant
   }
 
