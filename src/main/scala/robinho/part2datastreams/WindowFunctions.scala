@@ -29,7 +29,7 @@ case object WindowFunctions {
     bob.online(2.seconds),
     sam.register(3.seconds),
     sam.online(4.seconds),
-    rob.online(4.seconds),
+    rob.register(4.seconds),
     alice.register(4.seconds),
     mary.register(6.seconds),
     mary.online(6.seconds),
@@ -218,12 +218,45 @@ case object WindowFunctions {
     env.execute()
   }
 
+  /** Exercise: what was the time window (continuous 2s) when we had THE MOST number of registration
+    * events?
+    *   - what kind of window functions should we use? ALL WINDOW FUNCTION
+    *   - what kind of windows should we use? SLIDING WINDOWS
+    */
+
+  class KeepWindowAndCountFunction
+      extends AllWindowFunction[ServerEvent, (TimeWindow, Long), TimeWindow] {
+    override def apply(
+        window: TimeWindow,
+        input: Iterable[ServerEvent],
+        out: Collector[(TimeWindow, Long)]
+    ): Unit = {
+      out.collect((window, input.size))
+    }
+  }
+
+  def exercise(): Unit = {
+    val windowSize: Time = Time.seconds(2)
+    val slidingTime: Time = Time.seconds(1)
+
+    val slidingWindows =
+      eventStream
+        .filter(_.isInstanceOf[PlayerRegistered])
+        .windowAll(SlidingEventTimeWindows.of(windowSize, slidingTime))
+        .apply(new KeepWindowAndCountFunction)
+
+    val localWindows = slidingWindows.executeAndCollect().toList
+    val bestWindow = localWindows.maxBy(_._2)
+    println(s"The best window is ${bestWindow._1} with ${bestWindow._2} registration events")
+  }
+
   def main(args: Array[String]): Unit = {
     // demoCountByWindow()
     // demoCountByWindow_v2()
     // demoCountByWindow_v3()
     // demoCountByTypeByWindow()
     // demoSlidingAllWindows()
-    demoGlobalWindow()
+    // demoGlobalWindow()
+    exercise()
   }
 }
