@@ -67,8 +67,8 @@ object EssentialStreams {
       .map { (x: Long) =>
         x match {
           case n if n % 3 == 0 && n % 5 == 0 => FizzBuzzResult(n, "fizzbuzz")
-          case n if n % 3 == 0               => FizzBuzzResult(n, "fizzbuzz")
-          case n if n % 5 == 0               => FizzBuzzResult(n, "fizzbuzz")
+          case n if n % 3 == 0               => FizzBuzzResult(n, "fizz")
+          case n if n % 5 == 0               => FizzBuzzResult(n, "buzz")
           case n                             => FizzBuzzResult(n, s"$n")
         }
       }
@@ -151,6 +151,8 @@ object EssentialStreams {
   }
 
   def main(args: Array[String]): Unit = {
+    // applicationTemplate()
+    // fizzbuzz()
     demoExplicitTransformations()
   }
 }
