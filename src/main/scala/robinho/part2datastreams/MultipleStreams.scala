@@ -98,7 +98,7 @@ object MultipleStreams {
     val intervalJoinedStream = shoppingCartEvents
       .intervalJoin(catalogEvents)
       .between(Time.seconds(-2), Time.seconds(2))
-      .lowerBoundExclusive() // interval is bey default inclusive
+      .lowerBoundExclusive() // interval is by default inclusive
       .upperBoundExclusive()
       .process(new ProcessJoinFunction[ShoppingCartEvent, CatalogEvent, String] {
         override def processElement(
